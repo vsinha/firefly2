@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/bash -eu
 #
 # Copyright 2018 Google LLC
 #
@@ -14,10 +14,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-set -euo pipefail
+# Formats all of the source files using clang-format.
+clang-format -i -style=Google $(find . -name *.[ch]pp)
 
-cd software/generic
-mkdir build || true
-cd build
-cmake ..
-make && ./generictest
+# Inserts the license header
+for file in $(find . | grep -v ".\/.git" | grep -v format.sh  |grep ".*.\([ch]pp\|sh\)$"); do
+  if ! grep "Google LLC" $file > /dev/null; then
+    ~/bin/autogen/autogen -c "Google LLC" -l apache -i $file
+  fi
+done
